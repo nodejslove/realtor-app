@@ -10,6 +10,26 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model User {
+  id               Int       @id @default(autoincrement())
+  name             String
+  phone            String
+  email            String
+  password         String
+  created_at       DateTime  @default(now())
+  updated_at       DateTime  @updatedAt
+  user_type        UserType
+  homes            Home[]
+  buyer_messages   Message[] @relation("buyer_messages")
+  realtor_messages Message[] @relation("realtor_messages")
+}
+
+enum UserType {
+  BUYER
+  REALTOR
+  ADMIN
+}
+
 model Home {
   id                  Int          @id @default(autoincrement())
   address             String
@@ -19,10 +39,36 @@ model Home {
   listed_date         DateTime     @default(now())
   price               Float
   land_size           Float
-  propertyType        PropertyType
+  property_type       PropertyType
+  created_at          DateTime     @default(now())
+  updated_at          DateTime     @updatedAt
+  images              Image[]
+  realtorId           Int
+  user                User         @relation(fields: [realtorId], references: [id])
+  message             Message[]
+}
+
+model Image {
+  id         Int      @id @default(autoincrement())
+  url        String
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  homeId     Int
+  home       Home     @relation(fields: [homeId], references: [id])
 }
 
 enum PropertyType {
   RESIDENTIAL
   CONDO
+}
+
+model Message {
+  id        Int    @id @default(autoincrement())
+  message   String
+  homeId    Int
+  home      Home   @relation(fields: [homeId], references: [id])
+  buyerId   Int
+  buyer     User   @relation("buyer_messages", fields: [buyerId], references: [id])
+  realtorId Int
+  realtor   User   @relation("realtor_messages", fields: [realtorId], references: [id])
 }
